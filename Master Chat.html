@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Chévere Chat - Panel de Control</title>
+  <style>
+    /* ==========================================
+       🎨 ESTILOS BASE CYBER-TECH (PANEL DE CONTROL)
+       ========================================== */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: #0b0d13; color: #ffffff; min-height: 100vh; display: flex; flex-direction: column; }
+    
+    :root { --neon-red: #ff3333; --neon-blue: #00e5ff; --neon-green: #39ff14; }
+
+    /* 🛡️ PANTALLA CRISTALIZADA DE BLOQUEO (GLASSMORPHISM) */
+    #pantalla-bloqueo {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(11, 13, 19, 0.6);
+      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      display: flex; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .caja-autenticacion {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px; padding: 30px; text-align: center; width: 90%; max-width: 360px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .input-clave {
+      width: 100%; background: #222; border: 1px solid #444; color: #fff;
+      padding: 12px; border-radius: 8px; margin: 20px 0; text-align: center; font-size: 1.2rem; letter-spacing: 4px;
+    }
+    .input-clave:focus { border-color: var(--neon-blue); outline: none; }
+
+    /* 👑 CABECERA MASTER CHÉVERE CHAT */
+    .cabecera-master {
+      background: #12141c; border-bottom: 2px solid var(--neon-blue);
+      padding: 20px; text-align: center; box-shadow: 0 0 15px rgba(0,229,255,0.2);
+    }
+    .titulo-master {
+      font-size: 2.2rem; font-weight: bold; text-transform: uppercase;
+      color: #fff; text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+    }
+
+    /* 📊 CONTENEDOR PRINCIPAL */
+    .panel-grid {
+      flex: 1; display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 20px; max-width: 1600px; width: 100%; margin: 0 auto;
+    }
+
+    /* ⚙️ CONTROLES LATERALES */
+    .modulo-control {
+      background: #12141c; border: 1px solid #232736; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 20px; height: fit-content;
+    }
+    .seccion-titulo { color: var(--neon-blue); font-size: 1.1rem; border-bottom: 1px solid #232736; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; }
+    
+    /* Switches e Inputs */
+    .control-row { display: flex; justify-content: space-between; align-items: center; }
+    .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .3s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--neon-red); }
+    input:checked + .slider:before { transform: translateX(24px); }
+
+    .input-emergencia { width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 6px; resize: none; font-size: 0.9rem; margin-bottom: 10px; }
+    
+    /* 🖥️ MONITOR DE CHATS EN VIVO */
+    .modulo-monitor {
+      background: #12141c; border: 1px solid #232736; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; height: 70vh;
+    }
+    .tabla-contenedor { flex: 1; overflow-y: auto; margin-top: 10px; border: 1px solid #232736; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: #1a1d28; color: var(--neon-blue); padding: 12px; position: sticky; top: 0; }
+    td { padding: 12px; border-bottom: 1px solid #232736; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+
+    /* BOTONES */
+    .btn-global { width: 100%; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+    .btn-blue { background: var(--neon-blue); color: #000; }
+    .btn-blue:hover { background: #fff; box-shadow: 0 0 10px var(--neon-blue); }
+    .btn-danger { background: var(--neon-red); color: #fff; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; }
+    .btn-danger:hover { background: #ff6666; }
+
+    /* 👣 PIE DE PÁGINA OBLIGATORIO */
+    footer {
+      background: #0d0f13; text-align: center; padding: 15px; font-size: 0.85rem; color: #555; border-top: 1px solid #1a1d28; margin-top: auto;
+    }
+
+    /* RESPONSIVO */
+    @media (max-width: 900px) {
+      .panel-grid { grid-template-columns: 1fr; }
+      .modulo-monitor { height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🛡️ PANTALLA CRISTALIZADA DE SEGURIDAD -->
+  <div id="pantalla-bloqueo">
+    <div class="caja-autenticacion">
+      <h3 style="color:var(--neon-blue)">AUTENTICACIÓN MÁSTER</h3>
+      <p style="font-size:0.8rem; color:#aaa; margin-top:5px;">Introduce el código secreto de operador</p>
+      <input type="password" id="clave-acceso" class="input-clave" placeholder="••••••">
+      <button class="btn-global btn-blue" onclick="verificarClave()">Acceder al Sistema</button>
+    </div>
+  </div>
+
+  <!-- 👑 CABECERA PRINCIPAL -->
+  <header class="cabecera-master">
+    <div class="titulo-master">Master Chévere Chat</div>
+  </header>
+
+  <!-- 📊 CONTENEDOR DEL PANEL -->
+  <div class="panel-grid">
+    
+    <!-- PANEL DE CONTROLES (IZQUIERDA) -->
+    <aside class="modulo-control">
+      <div>
+        <div class="seccion-titulo">🛡️ ESTADO DE LA PLATAFORMA</div>
+        <div class="control-row">
+          <span>Modo Mantenimiento</span>
+          <label class="switch">
+            <input type="checkbox" id="switch-mantenimiento" onchange="alternarMantenimiento()">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <div class="seccion-titulo">🚨 ALERTA DE EMERGENCIA</div>
+        <textarea id="texto-emergencia" class="input-emergencia" rows="2" placeholder="Escribe un anuncio crítico para el público..."></textarea>
+        <button class="btn-global btn-blue" onclick="enviarMensajeEmergencia()">Publicar Alerta</button>
+      </div>
+
+      <div>
+        <div class="seccion-titulo">🖼️ PUBLICIDAD (CARRUSEL)</div>
+        <p style="font-size:0.75rem; color:#888; margin-bottom:10px;">Sube un nuevo anuncio al carrusel de bienvenida público.</p>
+        <button class="btn-global btn-blue" onclick="subirAnuncioCarrusel()">📷 Subir Imagen</button>
+      </div>
+    </aside>
+
+    <!-- MONITOR DE TRÁFICO (DERECHA) -->
+    <main class="modulo-monitor">
+      <div class="seccion-titulo" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>📊 MONITOR DE CHATS EN VIVO (ENTRANTES / SALIENTES)</span>
+        <button class="btn-global btn-blue" style="width:auto; padding:5px 15px;" onclick="cargarHistorialMonitor()">🔄 Refrescar</button>
+      </div>
+      
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha / Día / Año</th>
+              <th>Hora</th>
+              <th>Sala</th>
+              <th>Usuario</th>
+              <th>Mensaje</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-logs">
+            <tr>
+              <td colspan="6" style="text-align:center; color:#555; padding:40px;">Introduce el código maestro para cargar los datos...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- 👣 PIE DE PÁGINA REGISTRADO -->
+  <footer>
+    © Gabriel2026 | Master Chévere Chat System - Todos los derechos reservados.
+  </footer>
+
+  <script>
+    // 🌐 CONEXIÓN REAL CON EL SERVIDOR DE GOOGLE APPS SCRIPT
+    const URL_SERVIDOR = "https://script.google.com/macros/s/AKfycbxe4f58j8aJSOKv8bWseAhmDC6TtePuICDuvYB1CpjsMDknOevr5lC2OqhM_T9AEsI2gw/exec";
+
+    // 🔐 Romper efecto cristalizado mediante clave obligatoria
+    function verificarClave() {
+      const clave = document.getElementById('clave-acceso').value;
+      if (clave === "123456") {
+        document.getElementById('pantalla-bloqueo').style.display = 'none';
+        cargarHistorialMonitor();
+        setInterval(cargarHistorialMonitor, 6000); // Monitorear el flujo en vivo automáticamente cada 6 segundos
+      } else {
+        alert("Código de operador inválido. Acceso denegado.");
+        document.getElementById('clave-acceso').value = "";
+      }
+    }
+
+    // 📥 CARGAR HISTORIAL EN TIEMPO REAL DESDE GOOGLE SHEETS
+    function cargarHistorialMonitor() {
+      fetch(`${URL_SERVIDOR}?accion=obtener_toda_la_actividad`)
+        .then(response => response.json())
+        .then(res => {
+          if (res.status === "success") {
+            const tabla = document.getElementById('tabla-logs');
+            tabla.innerHTML = "";
+            
+            res.data.forEach(log => {
+              const fila = document.createElement('tr');
+              fila.innerHTML = `
+                <td>${log.fecha}</td>
+                <td>${log.hora}</td>
+                <td style="color:var(--neon-blue)">${log.sala}</td>
+                <td style="font-weight:bold;">${log.usuario}</td>
+                <td>${log.mensaje}</td>
+                <td><button class="btn-danger" onclick="banearDispositivo('${log.huella}', '${log.usuario}')">🚫 Banear</button></td>
+              `;
+              tabla.appendChild(fila);
+            });
+          }
+        }).catch(err => console.error("Error en monitor: ", err));
+    }
+
+      // ⚙️ SWITCH: ACTIVAR / DESACTIVAR MANTENIMIENTO GLOBAL
+    function alternarMantenimiento() {
+      const estado = document.getElementById('switch-mantenimiento').checked;
+      ejecutarAccionOperador({ accion: "cambiar_mantenimiento", valor: estado });
+    }
+
+    // 🚨 ENVIAR MENSAJE DE EMERGENCIA EN VIVO
+    function enviarMensajeEmergencia() {
+      const texto = document.getElementById('texto-emergencia').value.trim();
+      ejecutarAccionOperador({ accion: "cambiar_alerta", valor: texto });
+      alert("Mensaje de emergencia enviado a las pantallas públicas.");
+    }
+
+    // 🚫 BANEAR USUARIO POR HUELLA DIGITAL (Baneo inteligente)
+    function banearDispositivo(huella, apodo) {
+      if(confirm(`¿Estás seguro de bloquear permanentemente el dispositivo de '${apodo}'?`)) {
+        ejecutarAccionOperador({ accion: "banear_usuario", huella: huella, usuario: apodo });
+        alert("Dispositivo bloqueado en la base de datos.");
+      }
+    }
+
+    // 🖼️ SUBIR FOTO AL CARRUSEL DE BIENVENIDA (Tu motor lh3)
+    function subirAnuncioCarrusel() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = e => {
+        const archivo = e.target.files[0];
+        const lector = new FileReader();
+        lector.onload = function(evento) {
+          ejecutarAccionOperador({
+            accion: "subir_imagen_publicidad",
+            imagen_base64: evento.target.result,
+            imagen_nombre: "anuncio_" + Date.now() + ".jpg"
+          });
+          alert("Imagen de publicidad subida con éxito a tu Google Drive.");
+        };
+        lector.readAsDataURL(archivo);
+      };
+      input.click();
+    }
+
+    // 📤 FUNCIÓN UNIVERSAL DE ENVÍO POST DEL PANEL MÁSTER
+    function ejecutarAccionOperador(payload) {
+      fetch(URL_SERVIDOR, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }).then(() => {
+        setTimeout(cargarHistorialMonitor, 1000);
+      });
+    }
+  </script>
+</body>
+</html>

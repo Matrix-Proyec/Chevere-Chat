@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chévere Chat - Nueva Generación</title>
+  <style>
+    /* ==========================================
+       🎨 ESTILOS BASE CYBER-TECH (MODO OSCURO)
+       ========================================== */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #1a1d24; color: #ffffff; overflow: hidden; height: 100vh; }
+    
+    /* ✨ COLORES NEÓN */
+    :root { --neon-blue: #00e5ff; --neon-green: #39ff14; --dark-bg: #12141c; }
+
+    /* 🚪 PANTALLA DE BIENVENIDA (LANDING) */
+    #pantalla-bienvenida {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle, #1a1d24 0%, #0d0f13 100%);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; z-index: 1000; overflow-y: auto; padding: 20px;
+    }
+    .titulo-neon {
+      font-size: 2.8rem; font-weight: bold; color: #fff; text-transform: uppercase;
+      text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue); margin-bottom: 20px; text-align: center;
+    }
+    
+    /* 🖼️ CARRUSEL DE PUBLICIDAD */
+    .contenedor-carrusel { width: 100%; max-width: 500px; height: 220px; border-radius: 12px; overflow: hidden; border: 2px solid var(--neon-blue); box-shadow: 0 0 15px rgba(0,229,255,0.2); position: relative; margin-bottom: 25px; }
+    .carrusel-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .carrusel-img.activa { display: block; }
+
+    /* 🛡️ MÓDULO LEGAL Y CAPTCHA */
+    .caja-login { background: rgba(18, 20, 28, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px; width: 100%; max-width: 400px; text-align: center; backdrop-filter: blur(10px); }
+    .politicas-texto { font-size: 0.85rem; color: #aaa; max-height: 100px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #333; padding: 10px; border-radius: 6px; text-align: left; }
+    .casilla-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; font-size: 0.9rem; }
+    
+    .captcha-box { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+    .captcha-codigo { background: #333; color: var(--neon-green); font-size: 1.4rem; font-weight: bold; letter-spacing: 5px; padding: 8px 15px; border-radius: 6px; font-style: italic; border: 1px dashed var(--neon-green); user-select: none; }
+    .captcha-input { background: #222; border: 1px solid #555; color: #fff; padding: 10px; border-radius: 6px; width: 120px; text-align: center; font-size: 1.1rem; }
+    .captcha-input:focus { border-color: var(--neon-blue); outline: none; }
+    
+    .nickname-input { width: 100%; background: #222; border: 1px solid #555; color: #fff; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 1rem; text-align: center; }
+
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s; font-size: 1rem; }
+    .btn-aceptar { background: var(--neon-blue); color: #000; box-shadow: 0 0 10px rgba(0,229,255,0.4); }
+    .btn-aceptar:hover { background: #fff; box-shadow: 0 0 20px var(--neon-blue); }
+    .btn-rechazar { background: #ff3333; color: #fff; margin-left: 10px; }
+    
+    /* 🖥️ INTERFAZ PRINCIPAL DE CHAT */
+    #app-chat { display: none; height: 100vh; grid-template-columns: 280px 1fr; position: relative; }
+    
+    /* 🍔 MENÚ NAVEGACIÓN (RESPONSIVO) */
+    #menu-lateral { background-color: var(--dark-bg); border-right: 1px solid #2d313f; padding: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 900; transition: transform 0.3s ease; }
+    .sala-link { padding: 14px; border-radius: 8px; background: #1e2230; color: #ddd; cursor: pointer; transition: 0.2s; list-style: none; font-weight: 500; }
+    .sala-link:hover, .sala-link.activa { background: rgba(0, 229, 255, 0.1); color: var(--neon-blue); border-left: 4px solid var(--neon-blue); }
+    
+    .btn-hamburguesa { display: none; position: fixed; top: 15px; left: 15px; z-index: 999; background: var(--dark-bg); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px; border-radius: 6px; font-size: 1.3rem; cursor: pointer; }
+
+    /* 💬 ÁREA DE CONTENIDO Y CHAT */
+    #zona-conversacion { display: flex; flex-direction: column; background: #161920; height: 100vh; padding: 20px 20px 20px 20px; }
+    .cabecera-sala { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #2d313f; padding-bottom: 10px; padding-left: 50px; }
+    .buscador-chat { background: #222; border: 1px solid #444; color: #fff; padding: 8px 15px; border-radius: 20px; width: 200px; }
+    
+    .feed-mensajes { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 10px; margin-bottom: 15px; }
+    .burbuja { background: #202431; padding: 12px; border-radius: 12px; max-width: 75%; align-self: flex-start; animation: aparecer 0.2s ease-out; }
+    .burbuja.propia { background: #29374a; border-right: 3px solid var(--neon-blue); align-self: flex-end; }
+    .meta-msg { font-size: 0.75rem; color: #777; margin-bottom: 4px; display: flex; gap: 10px; }
+    .guiño-animado { font-size: 2rem; animation: latido 0.6s infinite alternate; display: inline-block; }
+
+    /* ⌨️ BARRA DE ENTRADA DE TEXTO */
+    .barra-entrada { display: flex; gap: 10px; background: var(--dark-bg); padding: 12px; border-radius: 10px; border: 1px solid #2d313f; }
+    .input-mensaje { flex: 1; background: transparent; border: none; color: #fff; font-size: 1rem; }
+    .input-mensaje:focus { outline: none; }
+    .btn-accion { background: transparent; border: none; font-size: 1.4rem; cursor: pointer; transition: transform 0.2s; }
+    .btn-accion:hover { transform: scale(1.1); }
+
+    /* 🚨 ALERTA ROJA DE EMERGENCIA */
+    #alerta-emergencia { display: none; background: #ff3333; color: white; padding: 8px; text-align: center; font-weight: bold; position: fixed; top: 0; left: 0; width: 100%; z-index: 950; animation: parpadeo 1s infinite; }
+
+    /* 📱 DISEÑO RESPONSIVO (MÓVILES) */
+    @media (max-width: 768px) {
+      #app-chat { grid-template-columns: 1fr; }
+      #menu-lateral { position: fixed; top: 0; left: 0; width: 260px; height: 100%; transform: translateX(-100%); }
+      #menu-lateral.abierto { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+      .btn-hamburguesa { display: block; }
+      .cabecera-sala { padding-left: 60px; }
+    }
+
+    /* ANIMACIONES */
+    @keyframes aparecer { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes latido { from { transform: scale(1); } to { transform: scale(1.2); } }
+    @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+  </style>
+</head>
+<body>
+
+  <!-- 🚨 ALERTA DE EMERGENCIA DEL OPERADOR -->
+  <div id="alerta-emergencia">⚠️ ATENCIÓN: Mantenimiento en breve.</div>
+
+  <!-- 🚪 INTERFAZ DE BIENVENIDA -->
+  <div id="pantalla-bienvenida">
+    <div class="titulo-neon">Chévere Chat</div>
+    
+    <!-- Carrusel Publicitario -->
+    <div class="contenedor-carrusel">
+      <img src="https://placeholder.com" class="carrusel-img activa">
+      <img src="https://placeholder.com" class="carrusel-img">
+    </div>
+
+    <!-- Formulario de Acceso -->
+    <div class="caja-login">
+      <div class="politicas-texto">
+        <strong>POLÍTICA DE PRIVACIDAD:</strong> Chévere Chat es una plataforma de mensajería organizada en salas temáticas (Trabajo, Amistad, Ocio). No recopilamos correos ni datos personales. Usamos una huella digital técnica del navegador para la moderación del chat y protección contra spam. Al aceptar, confirmas que cumplirás las normas de respeto mutuo.
+      </div>
+      
+      <div class="casilla-container">
+        <input type="checkbox" id="check-legal">
+        <label for="check-legal">Acepto los Términos y Políticas</label>
+      </div>
+
+      <div class="captcha-box">
+        <div class="captcha-codigo" id="codigo-seguridad">A7B2</div>
+        <input type="text" id="captcha-input" class="captcha-input" placeholder="Copiar...">
+      </div>
+
+      <input type="text" id="nickname" class="nickname-input" placeholder="Escribe tu Apodo / Chamo">
+
+      <div>
+        <button class="btn btn-aceptar" onclick="validarEntrada()">Aceptar</button>
+        <button class="btn btn-rechazar" onclick="window.location.reload()">Rechazar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🍔 BOTÓN HAMBURGUESA MÓVIL -->
+  <button class="btn-hamburguesa" onclick="toggleMenu()">☰</button>
+
+  <!-- 🖥️ INTERFAZ PRINCIPAL DEL CHAT -->
+  <div id="app-chat">
+    <!-- Menú Lateral -->
+    <ul id="menu-lateral">
+      <h3 style="color:var(--neon-blue); margin-bottom:15px; font-size:1.1rem;">💬 SALAS</h3>
+      <li class="sala-link activa" onclick="cambiarSala('Comunidad', this)">🌍 Comunidad General</li>
+      <li class="sala-link" onclick="cambiarSala('Trabajo', this)">📢 Trabajo / Proyectos</li>
+      <li class="sala-link" onclick="cambiarSala('Amistad', this)">🤝 Amistad / Panas</li>
+      <li class="sala-link" onclick="cambiarSala('Privados', this)">🔒 Chats Privados</li>
+      <li class="sala-link" onclick="cambiarSala('Avisos', this)">📣 Avisos Oficiales</li>
+      <li class="sala-link" onclick="cambiarSala('Videojuegos', this)">🎮 Videojuegos / Ocio</li>
+      <li class="sala-link" onclick="cambiarSala('Soporte', this)">💡 Soporte / Ayuda</li>
+      <li class="sala-link" onclick="cambiarSala('CompraVenta', this)">🛍️ Compra / Venta</li>
+    </ul>
+
+      <!-- Área de Chat Activa -->
+    <div id="zona-conversacion">
+      <div class="cabecera-sala">
+        <h2 id="nombre-sala-activa" style="color:var(--neon-blue)">🌍 Comunidad General</h2>
+        <input type="text" id="buscador" class="buscador-chat" placeholder="🔍 Filtrar chat..." oninput="filtrarMensajes()">
+      </div>
+
+      <div class="feed-mensajes" id="feed">
+        <div class="burbuja">
+          <div class="meta-msg"><span>Sistema</span><span>10:15 PM</span></div>
+          ¡Bienvenidos a la nueva era de Chévere Chat! Respeta las reglas y disfruta.
+        </div>
+      </div>
+
+      <div class="barra-entrada">
+        <button class="btn-accion" onclick="enviarGuino()">😉</button>
+        <input type="text" id="msj-input" class="input-mensaje" placeholder="Escribe un mensaje chévere...">
+        <button class="btn-accion" id="btn-foto" style="display:none;" onclick="activarCamara()">📷</button>
+        <button class="btn-accion" onclick="enviarMensajeTexto()" style="color:var(--neon-green)">🚀</button>
+      </div>
+    </div>
+  </div>
+  
+   <script>
+    // 🌐 CONEXIÓN REAL CON EL SERVIDOR DE GOOGLE
+    const URL_SERVIDOR = "https://script.google.com/macros/s/AKfycbxe4f58j8aJSOKv8bWseAhmDC6TtePuICDuvYB1CpjsMDknOevr5lC2OqhM_T9AEsI2gw/exec";
+
+    let salaActiva = "Comunidad";
+    let miUsuario = "";
+    let miHuellaDigital = "";
+
+    // 🔄 Control del Carrusel Automático de Publicidad
+    let idx = 0;
+    const imagenes = document.querySelectorAll('.carrusel-img');
+    if(imagenes.length > 0) {
+      setInterval(() => {
+        imagenes[idx].classList.remove('activa');
+        idx = (idx + 1) % imagenes.length;
+        imagenes[idx].classList.add('activa');
+      }, 4000);
+    }
+
+    // 🛡️ Generador de Captcha Aleatorio
+    function generarCaptcha() {
+      const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let resultado = '';
+      for (let i = 0; i < 4; i++) resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      document.getElementById('codigo-seguridad').innerText = resultado;
+    }
+    generarCaptcha();
+
+    // 👣 Generador de Huella Digital Única del Dispositivo (Invisible)
+    function obtenerHuellaDispositivo() {
+      const datos = navigator.userAgent + navigator.language + screen.colorDepth + screen.width + screen.height;
+      let hash = 0;
+      for (let i = 0; i < datos.length; i++) {
+        const char = datos.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return "HUELLA_" + Math.abs(hash);
+    }
+    miHuellaDigital = obtenerHuellaDispositivo();
+
+    // 🔐 Validación de Acceso e Inicio de Conexión Real
+    function validarEntrada() {
+      const check = document.getElementById('check-legal').checked;
+      const captchaIngresado = document.getElementById('captcha-input').value.trim().toUpperCase();
+      const captchaCorrecto = document.getElementById('codigo-seguridad').innerText;
+      const nick = document.getElementById('nickname').value.trim();
+
+      if (!check) return alert("Debes aceptar las Políticas de Privacidad.");
+      if (captchaIngresado !== captchaCorrecto) { alert("Código de seguridad incorrecto."); generarCaptcha(); return; }
+      if (nick === "") return alert("Por favor, ingresa un apodo para continuar.");
+
+      miUsuario = nick;
+      
+      // Ocultar bienvenida y mostrar chat
+      document.getElementById('pantalla-bienvenida').style.display = 'none';
+      document.getElementById('app-chat').style.display = 'grid';
+      
+      // Cargar primer chat real de forma inmediata y activar actualización automática
+      cargarMensajesServidor();
+      setInterval(cargarMensajesServidor, 4000); // Polling cada 4 segundos como planeamos para no saturar
+    }
+
+    // 🍔 Menú Hamburguesa Móvil
+    function toggleMenu() {
+      document.getElementById('menu-lateral').classList.toggle('abierto');
+    }
+
+    // 🔄 Cambio de Salas con Limpieza Absoluta de Pantalla
+    function cambiarSala(nombreSala, elemento) {
+      salaActiva = nombreSala;
+      document.getElementById('nombre-sala-activa').innerText = elemento.innerText;
+      document.querySelectorAll('.sala-link').forEach(l => l.classList.remove('activa'));
+      elemento.classList.add('activa');
+      
+      // Limpiar feed inmediatamente para evitar residuos de otras salas
+      document.getElementById('feed').innerHTML = '<div class="burbuja"><div class="meta-msg"><span>Sistema</span></div>Cargando sala...</div>';
+      
+      // Mostrar botón de foto solo en sala Compra/Venta
+      document.getElementById('btn-foto').style.display = (nombreSala === 'CompraVenta') ? 'block' : 'none';
+      
+      // Cerrar menú móvil
+      document.getElementById('menu-lateral').classList.remove('abierto');
+      
+      // Forzar carga de datos de la nueva sala desde el servidor
+      cargarMensajesServidor();
+    }
+
+    // 📥 DESCARGA REAL DESDE GOOGLE SHEETS
+    function cargarMensajesServidor() {
+      fetch(`${URL_SERVIDOR}?sala=${salaActiva}`)
+        .then(response => response.json())
+        .then(res => {
+          if (res.status === "success") {
+            // Verificar si el operador activó el modo mantenimiento
+            if (res.mantenimiento === true || res.mantenimiento === "TRUE") {
+              alert("La plataforma ha entrado en mantenimiento.");
+              window.location.reload();
+              return;
+            }
+            
+            // Mostrar u ocultar mensaje de emergencia en vivo
+            const banner = document.getElementById('alerta-emergencia');
+            if (res.alerta && res.alerta.trim() !== "") {
+              banner.innerText = "⚠️ " + res.alerta;
+              banner.style.display = 'block';
+            } else {
+              banner.style.display = 'none';
+            }
+
+            // Renderizar los mensajes reales en el feed
+            const feed = document.getElementById('feed');
+            feed.innerHTML = ""; // Limpiar carga anterior
+            
+            if (res.data.length === 0) {
+              feed.innerHTML = '<div class="burbuja"><div class="meta-msg"><span>Sistema</span></div>Sala vacía. ¡Sé el primero en escribir!</div>';
+            } else {
+              res.data.forEach(msg => {
+                const esPropio = (msg.usuario === miUsuario);
+                const esGuino = (msg.mensaje === "[GUIÑO] 😉");
+                
+                const nuevaBurbuja = document.createElement('div');
+                nuevaBurbuja.className = `burbuja ${esPropio ? 'propia' : ''}`;
+                
+                let contenido = `<div class="meta-msg"><span>${msg.usuario}</span><span>${msg.hora}</span></div>`;
+                
+                // Si el mensaje es un enlace de imagen (Compra/Venta con lh3)
+                if (msg.mensaje.startsWith('https://googleusercontent.com')) {
+                  contenido += `<img src="${msg.mensaje}" style="max-width:100%; border-radius:8px; margin-top:5px; border:1px solid var(--neon-blue);">`;
+                } else if (esGuino) {
+                  contenido += `<span class="guiño-animado">😉</span>`;
+                } else {
+                  contenido += msg.mensaje;
+                }
+                
+                nuevaBurbuja.innerHTML = contenido;
+                feed.appendChild(nuevaBurbuja);
+              });
+              feed.scrollTop = feed.scrollHeight; // Auto-bajar scroll
+            }
+          }
+        })
+        .catch(err => console.error("Error cargando datos: ", err));
+    }
+
+    // 📤 ENVÍO REAL A LA BASE DE DATOS (POST)
+    function ejecutarEnvioServidor(contenidoMensaje) {
+      const payload = {
+        accion: "enviar_mensaje",
+        sala: salaActiva,
+        usuario: miUsuario,
+        huella: miHuellaDigital,
+        mensaje: contenidoMensaje
+      };
+
+      fetch(URL_SERVIDOR, {
+        method: "POST",
+        mode: "no-cors", // Requerido para Apps Script
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        // Recargar el feed inmediatamente para ver el mensaje reflejado
+        cargarMensajesServidor();
+      })
+      .catch(err => alert("Error al enviar mensaje: " + err));
+    }
+
+    function enviarMensajeTexto() {
+      const input = document.getElementById('msj-input');
+      const texto = input.value.trim();
+      if (texto === "") return;
+      
+      ejecutarEnvioServidor(texto);
+      input.value = "";
+    }
+
+    function enviarGuino() {
+      ejecutarEnvioServidor("[GUIÑO] 😉");
+    }
+
+    // 📷 SUBIDA REAL DE IMÁGENES EN COMPRA/VENTA (Basado en tu código de prensa)
+    function activarCamara() {
+      const inputArchivo = document.createElement('input');
+      inputArchivo.type = 'file';
+      inputArchivo.accept = 'image/*';
+      
+      inputArchivo.onchange = e => {
+        const archivo = e.target.files[0];
+        const lector = new FileReader();
+        
+        lector.onload = function(eventoEntrada) {
+          const base64Data = eventoEntrada.target.result;
+          
+          const payload = {
+            accion: "subir_imagen",
+            huella: miHuellaDigital,
+            imagen_base64: base64Data,
+            imagen_nombre: "compra_venta_" + Date.now() + ".jpg"
+          };
+
+          // Mostrar aviso temporal de carga
+          document.getElementById('feed').innerHTML += '<div class="burbuja"><div class="meta-msg"><span>Sistema</span></div>Subiendo imagen al servidor de Google Drive...</div>';
+
+          fetch(URL_SERVIDOR, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          })
+          .then(() => {
+            alert("Imagen procesada. Se reflejará en la sala en unos segundos.");
+            cargarMensajesServidor();
+          })
+          .catch(err => alert("Error al subir archivo: " + err));
+        };
+        
+        lector.readAsDataURL(archivo);
+      };
+      
+      inputArchivo.click();
+    }
+
+    // 🔎 Filtro visual instantáneo sobre el texto en pantalla (Sugerencia)
+    function filtrarMensajes() {
+      const busqueda = document.getElementById('buscador').value.toLowerCase();
+      const burbujas = document.querySelectorAll('.feed-mensajes .burbuja');
+      
+      burbujas.forEach(burbuja => {
+        const texto = burbuja.innerText.toLowerCase();
+        burbuja.style.display = texto.includes(busqueda) ? 'block' : 'none';
+      });
+    }
+  </script>
+  
+ 
+</body>
+</html>
